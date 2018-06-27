@@ -1,2 +1,0 @@
-/usr/bin/ar qc libcommon_obj.a  CMakeFiles/common_obj.dir/a.c.o
-/usr/bin/ranlib libcommon_obj.a

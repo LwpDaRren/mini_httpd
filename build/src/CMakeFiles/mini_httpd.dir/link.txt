@@ -1,1 +1,0 @@
-/usr/bin/cc    CMakeFiles/mini_httpd.dir/mini_httpd.c.o  -o mini_httpd core/libcore_obj.a common/libcommon_obj.a 

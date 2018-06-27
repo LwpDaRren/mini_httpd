@@ -1,7 +1,7 @@
 # mini_httpd
 A portable tiny Web Server
 
-##Compile Recommendation
+#Compile Recommendation
 mkdir build
 cmake ../
 make

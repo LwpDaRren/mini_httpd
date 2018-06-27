@@ -1,0 +1,11 @@
+/home/lwp/code/mini_httpd/build/CMakeFiles/rebuild_cache.dir
+/home/lwp/code/mini_httpd/build/CMakeFiles/edit_cache.dir
+/home/lwp/code/mini_httpd/build/src/CMakeFiles/rebuild_cache.dir
+/home/lwp/code/mini_httpd/build/src/CMakeFiles/mini_httpd.dir
+/home/lwp/code/mini_httpd/build/src/CMakeFiles/edit_cache.dir
+/home/lwp/code/mini_httpd/build/src/common/CMakeFiles/rebuild_cache.dir
+/home/lwp/code/mini_httpd/build/src/common/CMakeFiles/common_obj.dir
+/home/lwp/code/mini_httpd/build/src/common/CMakeFiles/edit_cache.dir
+/home/lwp/code/mini_httpd/build/src/core/CMakeFiles/rebuild_cache.dir
+/home/lwp/code/mini_httpd/build/src/core/CMakeFiles/core_obj.dir
+/home/lwp/code/mini_httpd/build/src/core/CMakeFiles/edit_cache.dir

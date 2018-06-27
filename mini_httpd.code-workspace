@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"common.h": "c",
+			"stdio.h": "c",
+			"inet.h": "c",
+			"session.h": "c",
+			"fstream": "c",
+			"locale": "c"
+		}
+	}
+}

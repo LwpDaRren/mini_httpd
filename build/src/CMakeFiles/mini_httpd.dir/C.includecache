@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../src/../include/common.h
+stdint.h
+-
+
+../src/../include/session.h
+common.h
+../src/../include/common.h
+
+/home/lwp/code/mini_httpd/src/mini_httpd.c
+stdio.h
+/home/lwp/code/mini_httpd/src/stdio.h
+signal.h
+-
+session.h
+/home/lwp/code/mini_httpd/src/session.h
+common.h
+/home/lwp/code/mini_httpd/src/common.h
+

@@ -1,0 +1,2 @@
+/usr/bin/ar qc libcore_obj.a  CMakeFiles/core_obj.dir/session.c.o
+/usr/bin/ranlib libcore_obj.a

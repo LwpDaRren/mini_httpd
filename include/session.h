@@ -6,6 +6,9 @@
 #define MINI_HTTPD_LISTEN_PORT  80
 #define LISTEN_BACKLOG          50
 
+#define CLIENT_CONNECTION_RECV_TIMEOUT_S    0
+#define CLIENT_CONNECTION_RECV_TIMEOUT_MS   100
+
 #define CLIENT_MSG_BUF_SIZE     (1*1024)
 
 struct stServerInfo

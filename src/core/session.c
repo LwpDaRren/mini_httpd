@@ -31,7 +31,7 @@ uint32_t creat_server_sock_session()
 
     serverInfo.server_socks_fd = socket(AF_INET, SOCK_STREAM, 0);
     if(-1 == serverInfo.server_socks_fd) {
-        printf("server socket file discriptor init failed!\n");
+        perror("server socket file discriptor init failed!\n");
         return Server_Status_FAIL;
     }
 
@@ -44,7 +44,7 @@ uint32_t creat_server_sock_session()
     }
 
     if (listen(serverInfo.server_socks_fd, LISTEN_BACKLOG) == -1) {
-        printf("server listen port failed!\n");
+        perror("server listen port failed!\n");
         return Server_Status_FAIL;   
     }
 
@@ -53,7 +53,7 @@ uint32_t creat_server_sock_session()
 
 int32_t server_accept_client_session()
 {
-    struct sockaddr client_addr_info;
+    struct sockaddr_in client_addr_info;
     int32_t client_addr_info_len;
     int32_t client_connection_fd;
     client_addr_info_len = sizeof(client_addr_info);
@@ -63,25 +63,27 @@ int32_t server_accept_client_session()
         exit(1);
     }
 
+    printf("client addr %s\n", inet_ntoa(client_addr_info.sin_addr));
+    printf("client port %d\n", client_addr_info.sin_port);  
+
     return client_connection_fd;
 }
 
-uint32_t tmp;
+char header[] = "HTTP/1.1 200 OK \r\nServer: Mini_httdp/1.1\r\nDate: 2018/6/30\r\n\r\n";
 char send_string[] = "hello world";
 void client_connection_handler()
 {
     uint32_t client_connection_fd;
     char *p_client_msg_buf = NULL;
-    int32_t recv_buf_len, nready;
-    struct timeval timeout = {0, 100};
+    int32_t recv_buf_len;
+    struct timeval recv_timeout = {CLIENT_CONNECTION_RECV_TIMEOUT_S, CLIENT_CONNECTION_RECV_TIMEOUT_MS};
 
     FILE *log_fd;
     log_fd = fopen("recv.log", "aw+");
 
     client_connection_fd = server_accept_client_session();
-    tmp = client_connection_fd;
 
-    setsockopt(client_connection_fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(struct timeval));
+    setsockopt(client_connection_fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&recv_timeout, sizeof(struct timeval));
     p_client_msg_buf = (char *)malloc(CLIENT_MSG_BUF_SIZE);
     if(p_client_msg_buf == NULL) {
         printf("client_msg_buf malloc failed! \n");
@@ -89,7 +91,7 @@ void client_connection_handler()
     }
     
     do{
-        memset(p_client_msg_buf,0x0,CLIENT_MSG_BUF_SIZE);
+        memset(p_client_msg_buf, 0x0, CLIENT_MSG_BUF_SIZE);
         recv_buf_len = recv(client_connection_fd, p_client_msg_buf, 
            sizeof(p_client_msg_buf), 0);
         printf("%s",p_client_msg_buf);
@@ -103,6 +105,7 @@ void client_connection_handler()
         }
     }while(1);
 
+    send(client_connection_fd , header , strlen(header) , 0);
     send(client_connection_fd , send_string , strlen(send_string) , 0);
     
     close(client_connection_fd);
@@ -118,7 +121,6 @@ void client_connection_handler()
 
 void close_server_session()
 {
-    close(tmp);
     close(serverInfo.server_socks_fd);
 
     return;

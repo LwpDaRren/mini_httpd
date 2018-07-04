@@ -12,6 +12,7 @@
 
 #include "common.h"
 #include "session.h"
+#include "resp_proc.h"
 
 struct stServerInfo serverInfo;
 
@@ -69,7 +70,7 @@ int32_t server_accept_client_session()
     return client_connection_fd;
 }
 
-char header[] = "HTTP/1.1 200 OK \r\nServer: Mini_httdp/1.1\r\nDate: 2018/6/30\r\n\r\n";
+//char header[] = "HTTP/1.1 200 OK \r\nServer: Mini_httdp/1.1\r\nDate: 2018/6/30\r\n\r\n";
 char send_string[] = "hello world";
 void client_connection_handler()
 {
@@ -105,7 +106,8 @@ void client_connection_handler()
         }
     }while(1);
 
-    send(client_connection_fd , header , strlen(header) , 0);
+    //send(client_connection_fd , header , strlen(header) , 0);
+    response_procedure_handler(client_connection_fd);
     send(client_connection_fd , send_string , strlen(send_string) , 0);
     
     close(client_connection_fd);

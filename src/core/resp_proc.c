@@ -97,4 +97,5 @@ void response_procedure_handler(uint32_t connection_fd)
     response_header_create(header, RESP_HEADER_MAXSIZE, &header_info);
 
     send(connection_fd , header , strlen(header) , 0);
+    free(header);
 }

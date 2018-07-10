@@ -103,13 +103,12 @@ int32_t server_accept_client_session()
     return client_connection_fd;
 }
 
-//char header[] = "HTTP/1.1 200 OK \r\nServer: Mini_httdp/1.1\r\nDate: 2018/6/30\r\n\r\n";
-char send_string[] = "hello world";
 void client_connection_handler()
 {
     uint32_t client_connection_fd;
     char *p_client_msg_buf = NULL;
-    int32_t recv_buf_len;
+    struct request_info_s request_info;
+    int32_t recv_buf_len , client_msg_buf_len = 0;
     struct timeval recv_timeout = {CLIENT_CONNECTION_RECV_TIMEOUT_S, CLIENT_CONNECTION_RECV_TIMEOUT_MS};
 
     FILE *log_fd;
@@ -124,11 +123,11 @@ void client_connection_handler()
         return;
     }
     
-    do{
-        memset(p_client_msg_buf, 0x0, CLIENT_MSG_BUF_SIZE);
-        recv_buf_len = recv(client_connection_fd, p_client_msg_buf, 
-           sizeof(p_client_msg_buf), 0);
-        printf("%s",p_client_msg_buf);
+    memset(p_client_msg_buf, 0x0, CLIENT_MSG_BUF_SIZE);
+    do{  
+        recv_buf_len = recv(client_connection_fd, p_client_msg_buf + client_msg_buf_len, 
+           CLIENT_MSG_BUF_SIZE - client_msg_buf_len, 0);
+        
         //fwrite(p_client_msg_buf,recv_buf_len,1,log_fd);
         //printf("recv_buf_len=%d\n",recv_buf_len);
         if(recv_buf_len == -1) {
@@ -137,11 +136,13 @@ void client_connection_handler()
             printf("client session closed\n");
             break;
         }
+        client_msg_buf_len += recv_buf_len;
     }while(1);
 
+    printf("%s",p_client_msg_buf);
     //send(client_connection_fd , header , strlen(header) , 0);
-    response_procedure_handler(client_connection_fd);
-    send(client_connection_fd , send_string , strlen(send_string) , 0);
+    request_procedure_handler(p_client_msg_buf, client_msg_buf_len, client_connection_fd, &request_info);
+    response_procedure_handler(client_connection_fd, request_info);
     
     close(client_connection_fd);
     //close(serverInfo.server_socks_fd);

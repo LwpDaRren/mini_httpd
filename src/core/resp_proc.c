@@ -88,14 +88,49 @@ static inline uint32_t response_header_create(char *resp_str, uint32_t resp_str_
     return strlen(resp_str);
 }
 
-void response_procedure_handler(uint32_t connection_fd)
+char send_string[] = "404 not found";
+
+void response_procedure_handler(uint32_t connection_fd, struct request_info_s request_info)
 {
-    char *header = (char*)malloc(RESP_HEADER_MAXSIZE);
+    int32_t request_file_fd, requst_file_len;
+    char *header, *request_file_path;
     struct resp_header_info header_info;
-    header_info.status_code = 200;
+    struct stat stat_buf;
 
-    response_header_create(header, RESP_HEADER_MAXSIZE, &header_info);
+    if(request_info.request_file_path == NULL) {
+        return;
+    }
 
-    send(connection_fd , header , strlen(header) , 0);
+    header = (char*)malloc(RESP_HEADER_MAXSIZE);
+    request_file_path = (char*)malloc(128);
+    memset(request_file_path, 0x0, 128);
+    strcat(request_file_path, "./");
+
+    printf("parse method = %s\r\n",request_info.request_method);
+
+    if(0 == strcmp(request_info.request_file_path,"/")) {
+        strcat(request_file_path, "index.html");
+    } else {
+        strcat(request_file_path, request_info.request_file_path);
+    }
+
+    printf("parse file path = %s\r\n",request_file_path);
+    request_file_fd = open(request_file_path, O_RDONLY);
+    if(request_file_fd <= 0) {
+        printf("%s not found\r\n",request_file_path);
+        header_info.status_code = 404;
+        response_header_create(header, RESP_HEADER_MAXSIZE, &header_info);
+        send(connection_fd , header , strlen(header) , 0);
+        send(connection_fd , send_string , strlen(send_string) , 0);
+    } else {
+        header_info.status_code = 200;
+        response_header_create(header, RESP_HEADER_MAXSIZE, &header_info);
+        send(connection_fd , header , strlen(header) , 0);
+        fstat(request_file_fd, &stat_buf);
+        sendfile(connection_fd, request_file_fd, NULL ,stat_buf.st_size);
+        close(request_file_fd);
+    }
+    
+    free(request_file_path);
     free(header);
 }

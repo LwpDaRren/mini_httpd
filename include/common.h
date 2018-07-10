@@ -43,4 +43,10 @@ enum server_status_enum
     Server_Status_FAIL
 };
 
+struct request_info_s
+{
+    char* request_method;
+    char* request_file_path;
+};
+
 #endif

@@ -43,6 +43,7 @@ SOFTWARE.
 #include <errno.h>
 #include <strings.h>
 #include <fcntl.h>
+#include <pthread.h>
 #include "common.h"
 #include "resp_proc.h"
 
@@ -90,14 +91,14 @@ static inline uint32_t response_header_create(char *resp_str, uint32_t resp_str_
 
 char send_string[] = "404 not found";
 
-void response_procedure_handler(uint32_t connection_fd, struct request_info_s request_info)
+void response_procedure_handler(uint32_t connection_fd, struct request_info_s *request_info)
 {
     int32_t request_file_fd, requst_file_len;
     char *header, *request_file_path;
     struct resp_header_info header_info;
     struct stat stat_buf;
 
-    if(request_info.request_file_path == NULL) {
+    if(request_info->request_file_path == NULL) {
         return;
     }
 
@@ -106,12 +107,12 @@ void response_procedure_handler(uint32_t connection_fd, struct request_info_s re
     memset(request_file_path, 0x0, 128);
     strcat(request_file_path, "./");
 
-    printf("parse method = %s\r\n",request_info.request_method);
+    printf("parse method = %s\r\n",request_info->request_method);
 
-    if(0 == strcmp(request_info.request_file_path,"/")) {
+    if(0 == strcmp(request_info->request_file_path,"/")) {
         strcat(request_file_path, "index.html");
     } else {
-        strcat(request_file_path, request_info.request_file_path);
+        strcat(request_file_path, request_info->request_file_path);
     }
 
     printf("parse file path = %s\r\n",request_file_path);

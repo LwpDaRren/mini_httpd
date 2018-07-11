@@ -42,6 +42,7 @@ SOFTWARE.
 #include <errno.h>
 #include <strings.h>
 #include <fcntl.h>
+#include <pthread.h>
 
 #include "common.h"
 #include "session.h"
@@ -103,16 +104,37 @@ int32_t server_accept_client_session()
     return client_connection_fd;
 }
 
+struct session_procedure_thread_arg_s {
+    uint32_t client_connection_fd;
+    uint32_t client_msg_buf_len;
+    char *p_client_msg_buf;
+    struct request_info_s *request_info;
+};
+
+void session_procedure_thread(struct session_procedure_thread_arg_s *arg)
+{
+    request_procedure_handler(arg->p_client_msg_buf, arg->client_msg_buf_len, arg->client_connection_fd, arg->request_info);
+    response_procedure_handler(arg->client_connection_fd, arg->request_info);
+    
+    close(arg->client_connection_fd);
+    free(arg->p_client_msg_buf);
+    pthread_detach(pthread_self());
+}
+
 void client_connection_handler()
 {
     uint32_t client_connection_fd;
     char *p_client_msg_buf = NULL;
     struct request_info_s request_info;
-    int32_t recv_buf_len , client_msg_buf_len = 0;
+    int32_t recv_buf_len , client_msg_buf_len = 0, ret;
     struct timeval recv_timeout = {CLIENT_CONNECTION_RECV_TIMEOUT_S, CLIENT_CONNECTION_RECV_TIMEOUT_MS};
 
-    FILE *log_fd;
-    log_fd = fopen("recv.log", "aw+");
+    pthread_t session_procedure_thread_id;
+    pthread_attr_t session_procedure_thread_attr;
+    struct session_procedure_thread_arg_s session_procedure_thread_arg;
+
+    //FILE *log_fd;
+    //log_fd = fopen("recv.log", "aw+");
 
     client_connection_fd = server_accept_client_session();
 
@@ -139,7 +161,18 @@ void client_connection_handler()
         client_msg_buf_len += recv_buf_len;
     }while(1);
 
+    session_procedure_thread_arg.client_connection_fd = client_connection_fd;
+    session_procedure_thread_arg.client_msg_buf_len = client_msg_buf_len;
+    session_procedure_thread_arg.p_client_msg_buf = p_client_msg_buf;
+    session_procedure_thread_arg.request_info = &request_info;
+    pthread_attr_init(&session_procedure_thread_attr);
+    pthread_attr_setdetachstate(&session_procedure_thread_attr, PTHREAD_CREATE_DETACHED);
+    ret = pthread_create(&session_procedure_thread_id, &session_procedure_thread_attr, 
+                            (void*)session_procedure_thread, &session_procedure_thread_arg);
+
     printf("%s",p_client_msg_buf);
+
+#if 0
     //send(client_connection_fd , header , strlen(header) , 0);
     request_procedure_handler(p_client_msg_buf, client_msg_buf_len, client_connection_fd, &request_info);
     response_procedure_handler(client_connection_fd, request_info);
@@ -149,8 +182,9 @@ void client_connection_handler()
     //printf("close ok\n");
     
     //fwrite(p_client_msg_buf,sizeof(p_client_msg_buf),1,log_fd);
-    fclose(log_fd);
+    //fclose(log_fd);
     free(p_client_msg_buf);
+#endif
 
     return;
 }

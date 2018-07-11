@@ -42,6 +42,6 @@ struct resp_header_info
     uint32_t status_code;
 };
 
-extern void response_procedure_handler(uint32_t connection_fd, struct request_info_s request_info);
+extern void response_procedure_handler(uint32_t connection_fd, struct request_info_s *request_info);
 
 #endif

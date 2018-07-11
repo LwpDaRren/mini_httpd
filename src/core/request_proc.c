@@ -46,14 +46,14 @@ SOFTWARE.
 
 static inline uint32_t request_syntax_parser(char* request_buf_in, uint32_t request_buf_len, struct request_info_s *request_info)
 {
-    char *request_buf_dup = strdup(request_buf_in);
+    //char *request_buf_dup = strdup(request_buf_in);
     char *request_each_line, *request_buf ;
-    request_buf = request_buf_dup;
+    request_buf = request_buf_in;
     request_each_line = strsep(&request_buf,"\r\n");
     request_info->request_method = strsep(&request_each_line," ");
     request_info->request_file_path = strsep(&request_each_line," ");
 
-    free(request_buf_dup);
+    //free(request_buf_dup);
 }
 
 void request_procedure_handler(char *request_buf_in, uint32_t request_buf_len, 

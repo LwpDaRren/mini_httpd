@@ -1,5 +1,6 @@
 PROJECT(mini_httpd_project)
 
+add_compile_options(-O2)
 add_subdirectory(common)
 add_subdirectory(core)
 include_directories(../include)

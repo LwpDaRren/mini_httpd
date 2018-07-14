@@ -107,7 +107,7 @@ void response_procedure_handler(uint32_t connection_fd, struct request_info_s *r
     memset(request_file_path, 0x0, 128);
     strcat(request_file_path, "./");
 
-    printf("parse method = %s\r\n",request_info->request_method);
+    //printf("parse method = %s\r\n",request_info->request_method);
 
     if(0 == strcmp(request_info->request_file_path,"/")) {
         strcat(request_file_path, "index.html");
@@ -115,7 +115,7 @@ void response_procedure_handler(uint32_t connection_fd, struct request_info_s *r
         strcat(request_file_path, request_info->request_file_path);
     }
 
-    printf("parse file path = %s\r\n",request_file_path);
+    //printf("parse file path = %s\r\n",request_file_path);
     request_file_fd = open(request_file_path, O_RDONLY);
     if(request_file_fd <= 0) {
         printf("%s not found\r\n",request_file_path);

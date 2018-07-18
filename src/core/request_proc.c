@@ -44,16 +44,40 @@ SOFTWARE.
 #include "common.h"
 #include "request_proc.h"
 
-static inline uint32_t request_syntax_parser(char* request_buf_in, uint32_t request_buf_len, struct request_info_s *request_info)
+static inline int32_t request_method_paser(char* request_line_buf, struct request_info_s *request_info)
 {
-    //char *request_buf_dup = strdup(request_buf_in);
-    char *request_each_line, *request_buf ;
-    request_buf = request_buf_in;
-    request_each_line = strsep(&request_buf,"\r\n");
-    request_info->request_method = strsep(&request_each_line," ");
-    request_info->request_file_path = strsep(&request_each_line," ");
+    if(request_line_buf == NULL) {
+        return -1;
+    }
+    request_info->request_method = strsep(&request_line_buf," ");
+    request_info->request_file_path = strsep(&request_line_buf," ");
 
-    //free(request_buf_dup);
+    if(request_info->request_method == NULL || request_info->request_file_path == NULL) {
+        return -1;
+    }
+
+    if(strcmp(request_info->request_method, "GET") != 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
+static inline int32_t request_syntax_parser(char* request_buf, uint32_t request_buf_len, struct request_info_s *request_info)
+{
+    char *request_each_line;
+    // Parse the first line, the first word should be the method
+    request_each_line = strsep(&request_buf,"\r\n");
+
+    if(request_method_paser(request_each_line,request_info) != 0) {
+        goto syntax_parse_error;
+    }
+
+    request_info->request_validatied = Request_Validate_Ok;
+    return 0;
+syntax_parse_error:
+    request_info->request_validatied = Request_Validate_Failed;
+    return -1;
 }
 
 void request_procedure_handler(char *request_buf_in, uint32_t request_buf_len, 

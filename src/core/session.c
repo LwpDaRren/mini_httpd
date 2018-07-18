@@ -98,22 +98,12 @@ int32_t server_accept_client_session()
         exit(1);
     }
 
-    //printf("client addr %s\n", inet_ntoa(client_addr_info.sin_addr));
-    //printf("client port %d\n", client_addr_info.sin_port);  
-
     return client_connection_fd;
 }
 
-struct session_procedure_thread_arg_s {
-    void *this;
-    uint32_t client_connection_fd;
-    uint32_t client_msg_buf_len;
-    char *p_client_msg_buf;
-    struct request_info_s *request_info;
-};
-
 void session_procedure_thread(struct session_procedure_thread_arg_s *arg)
 {
+    struct request_info_s request_info;
     int32_t recv_buf_len;
     int32_t client_connection_fd = arg->client_connection_fd;
     char *p_client_msg_buf = (char *)malloc(CLIENT_MSG_BUF_SIZE);
@@ -124,25 +114,20 @@ void session_procedure_thread(struct session_procedure_thread_arg_s *arg)
     memset(p_client_msg_buf, 0x0, CLIENT_MSG_BUF_SIZE);
 
     do{  
-        //printf("recv fd %d\r\n", client_connection_fd);
         recv_buf_len = recv(client_connection_fd, p_client_msg_buf + arg->client_msg_buf_len, 
            CLIENT_MSG_BUF_SIZE - arg->client_msg_buf_len, 0);
-        
-        //fwrite(p_client_msg_buf,recv_buf_len,1,log_fd);
-        //printf("recv_buf_len=%d\n",recv_buf_len);
         if(recv_buf_len == -1) {
             break;
         } else if(recv_buf_len == 0) {
-            //printf("client session closed\n");
             break;
         }
         arg->client_msg_buf_len += recv_buf_len;
     }while(1);
 
-    //printf("fd = %d \r\n%s",client_connection_fd, p_client_msg_buf);
+    printf("%s\r\n",p_client_msg_buf);
 
-    request_procedure_handler(p_client_msg_buf, arg->client_msg_buf_len, client_connection_fd, arg->request_info);
-    response_procedure_handler(client_connection_fd, arg->request_info);
+    request_procedure_handler(p_client_msg_buf, arg->client_msg_buf_len, client_connection_fd, &request_info);
+    response_procedure_handler(client_connection_fd, &request_info);
     
     close(client_connection_fd);
     free(arg->this);
@@ -154,7 +139,7 @@ void client_connection_handler()
 {
     uint32_t client_connection_fd;
     char *p_client_msg_buf = NULL;
-    struct request_info_s request_info;
+    
     int32_t recv_buf_len , client_msg_buf_len = 0, ret;
     struct timeval recv_timeout = {CLIENT_CONNECTION_RECV_TIMEOUT_S, CLIENT_CONNECTION_RECV_TIMEOUT_MS};
 
@@ -164,39 +149,17 @@ void client_connection_handler()
     struct session_procedure_thread_arg_s *session_procedure_thread_arg;
     session_procedure_thread_arg = (void*)malloc(sizeof(struct session_procedure_thread_arg_s));
 
-    //FILE *log_fd;
-    //log_fd = fopen("recv.log", "aw+");
-
     client_connection_fd = server_accept_client_session();
-    //printf("accept fd %d\r\n", client_connection_fd);
-
     setsockopt(client_connection_fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&recv_timeout, sizeof(struct timeval));
     
     session_procedure_thread_arg->this = session_procedure_thread_arg;
     session_procedure_thread_arg->client_connection_fd = client_connection_fd;
     session_procedure_thread_arg->client_msg_buf_len = client_msg_buf_len;
-    //session_procedure_thread_arg.p_client_msg_buf = p_client_msg_buf;
-    session_procedure_thread_arg->request_info = &request_info;
+
     pthread_attr_init(&session_procedure_thread_attr);
     pthread_attr_setdetachstate(&session_procedure_thread_attr, PTHREAD_CREATE_DETACHED);
     ret = pthread_create(&session_procedure_thread_id, &session_procedure_thread_attr, 
                             (void*)session_procedure_thread, session_procedure_thread_arg);
-
-    //printf("%s",p_client_msg_buf);
-
-#if 0
-    //send(client_connection_fd , header , strlen(header) , 0);
-    request_procedure_handler(p_client_msg_buf, client_msg_buf_len, client_connection_fd, &request_info);
-    response_procedure_handler(client_connection_fd, request_info);
-    
-    close(client_connection_fd);
-    //close(serverInfo.server_socks_fd);
-    //printf("close ok\n");
-    
-    //fwrite(p_client_msg_buf,sizeof(p_client_msg_buf),1,log_fd);
-    //fclose(log_fd);
-    free(p_client_msg_buf);
-#endif
 
     return;
 }

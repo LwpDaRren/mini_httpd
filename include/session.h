@@ -50,6 +50,13 @@ struct stServerInfo
     uint8_t server_status;
 };
 
+struct session_procedure_thread_arg_s {
+    void *this;
+    uint32_t client_connection_fd;
+    uint32_t client_msg_buf_len;
+    char *p_client_msg_buf;
+};
+
 extern uint32_t creat_server_sock_session();
 extern void client_connection_handler();
 extern void close_server_session();

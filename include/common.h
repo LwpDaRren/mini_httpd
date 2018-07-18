@@ -43,10 +43,19 @@ enum server_status_enum
     Server_Status_FAIL
 };
 
+enum request_validatied_enum
+{
+    Request_Validate_Ok,
+    Request_Validate_Failed,
+};
+
 struct request_info_s
 {
     char* request_method;
     char* request_file_path;
+
+    uint8_t request_validatied;
+    uint8_t recv[3];
 };
 
 #endif
